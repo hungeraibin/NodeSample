@@ -3,12 +3,19 @@
 const fs = require('fs')
 const path = require('path')
 const marked = require('marked')
-
+const browserSync = require('browser-sync')
 // 接收需要转换的文件路径
 const target = path.join(__dirname, process.argv[2] || '../README.md')
+var filename = target.replace(path.extname(target), '.html')
+var indexPath = path.basename(filename)
+// 通过browsersync创建一个文件服务器
+browserSync({  
+  server: path.dirname(target), // 网站根目录
+  index: indexPath // 默认文档
+ })
 
 // 监听文件变化
-fs.watchFile(target, (curr, prev) => {
+fs.watchFile(target, { interval: 200 }, (curr, prev) => {
   // console.log(`current:${curr.size};previous:${prev.size}`)  
   // 判断文件到底有没有变化
   if (curr.mtime == prev.mtime) {
@@ -22,7 +29,10 @@ fs.watchFile(target, (curr, prev) => {
     var html = marked(content)
     fs.readFile(path.join(__dirname, 'github.css'), 'utf8', (err, css) => {
       html = template.replace('{{{content}}}', html).replace('{{{styles}}}', css)
-      fs.writeFile(target.replace(path.extname(target), '.html'), html, 'utf8')
+      fs.writeFile(filename, html, 'utf8', err => {
+        browserSync.reload(indexPath)
+        console.log('updated@' + new Date())
+      })
     })
 
   })
