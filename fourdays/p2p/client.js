@@ -27,6 +27,9 @@ rl.question('What is your name? ', (name) => {
         case 'boardcast':
           console.log('\nboardcast[' + signal.from + ']>' + signal.message + '\n')
           break
+          case 'p2p':
+          console.log('\np2p[' + signal.from + ']>' + signal.message + '\n')
+          break
         default: 
           server.write('弄啥嘞！')
           break
@@ -38,13 +41,27 @@ rl.question('What is your name? ', (name) => {
   rl.prompt()
 
   rl.on('line', line => {
-    var send = {
-      procotol: 'boardcast', 
-      from: name, 
-      message: line.toString().trim() 
+    line = line.toString().trim()
+    var temp = line.split(':')
+    var send
+    if (temp.length === 2) {
+      // 点对点
+      send = {
+        procotol: 'p2p', 
+        from: name, 
+        to: temp[0], 
+        message: temp[1] 
+      }
+    } else {
+      // 广播
+      send = {
+        procotol: 'boardcast', 
+        from: name, 
+        message: line.toString().trim() 
+      }
+      server.write(JSON.stringify(send))
+      rl.prompt()
     }
-    server.write(JSON.stringify(send))
-    rl.prompt()
   }).on('close', () => {
 
   })

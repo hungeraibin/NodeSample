@@ -25,6 +25,20 @@ var server = net.createServer((socket) => {
     })
   }
 
+  function p2p(signal) {
+    // 肯定有用户名和消息
+    var username = signal.from
+    var target = signal.to
+    var message = signal.message
+    var send = { 
+      procotol: signal.procotol,
+      from: username,
+      message: message
+    }
+    // 发送消息 
+    clients[target].write(JSON.stringify(send))
+  }
+
   socket.on('data', chunk => {
     // 有任何客户端发消息都会触发
     try {
